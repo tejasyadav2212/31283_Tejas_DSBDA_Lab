@@ -1,0 +1,415 @@
+
+
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv("Social_Network_Ads.csv")
+df
+
+	User ID 	Gender 	Age 	EstimatedSalary 	Purchased
+0 	15624510 	Male 	19 	19000 	0
+1 	15810944 	Male 	35 	20000 	0
+2 	15668575 	Female 	26 	43000 	0
+3 	15603246 	Female 	27 	57000 	0
+4 	15804002 	Male 	19 	76000 	0
+... 	... 	... 	... 	... 	...
+395 	15691863 	Female 	46 	41000 	1
+396 	15706071 	Male 	51 	23000 	1
+397 	15654296 	Female 	50 	20000 	1
+398 	15755018 	Male 	36 	33000 	0
+399 	15594041 	Female 	49 	36000 	1
+
+400 rows × 5 columns
+
+df.describe()
+
+	User ID 	Age 	EstimatedSalary 	Purchased
+count 	4.000000e+02 	400.000000 	400.000000 	400.000000
+mean 	1.569154e+07 	37.655000 	69742.500000 	0.357500
+std 	7.165832e+04 	10.482877 	34096.960282 	0.479864
+min 	1.556669e+07 	18.000000 	15000.000000 	0.000000
+25% 	1.562676e+07 	29.750000 	43000.000000 	0.000000
+50% 	1.569434e+07 	37.000000 	70000.000000 	0.000000
+75% 	1.575036e+07 	46.000000 	88000.000000 	1.000000
+max 	1.581524e+07 	60.000000 	150000.000000 	1.000000
+
+new_df = df.drop(['User ID'], axis=1)
+new_df
+
+	Gender 	Age 	EstimatedSalary 	Purchased
+0 	Male 	19 	19000 	0
+1 	Male 	35 	20000 	0
+2 	Female 	26 	43000 	0
+3 	Female 	27 	57000 	0
+4 	Male 	19 	76000 	0
+... 	... 	... 	... 	...
+395 	Female 	46 	41000 	1
+396 	Male 	51 	23000 	1
+397 	Female 	50 	20000 	1
+398 	Male 	36 	33000 	0
+399 	Female 	49 	36000 	1
+
+400 rows × 4 columns
+
+# 0 - female;  1 - Male ....
+new_df['Gender'].replace(['Female','Male'],[0,1], inplace = True)
+new_df['Gender']
+
+0      1
+1      1
+2      0
+3      0
+4      1
+      ..
+395    0
+396    1
+397    0
+398    1
+399    0
+Name: Gender, Length: 400, dtype: int64
+
+new_df
+
+	Gender 	Age 	EstimatedSalary 	Purchased
+0 	1 	19 	19000 	0
+1 	1 	35 	20000 	0
+2 	0 	26 	43000 	0
+3 	0 	27 	57000 	0
+4 	1 	19 	76000 	0
+... 	... 	... 	... 	...
+395 	0 	46 	41000 	1
+396 	1 	51 	23000 	1
+397 	0 	50 	20000 	1
+398 	1 	36 	33000 	0
+399 	0 	49 	36000 	1
+
+400 rows × 4 columns
+
+new_df['Purchased'].value_counts()
+
+0    257
+1    143
+Name: Purchased, dtype: int64
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import mean_squared_error
+
+import matplotlib.pyplot as plt
+
+x = new_df['Age']
+y = new_df['Purchased']
+plt.scatter(x, y)
+plt.show()
+
+x = new_df['EstimatedSalary']
+y = new_df['Purchased']
+plt.scatter(x, y)
+plt.show()
+
+x = new_df['Gender']
+y = new_df['Purchased']
+plt.scatter(x, y)
+plt.show()
+
+x=new_df.loc[:, new_df.columns != 'Purchased']
+y=new_df['Purchased']
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.25)
+
+X_train
+
+	Gender 	Age 	EstimatedSalary
+361 	0 	53 	34000
+253 	0 	37 	146000
+342 	0 	38 	65000
+14 	1 	18 	82000
+157 	1 	29 	75000
+... 	... 	... 	...
+112 	1 	38 	61000
+293 	1 	37 	77000
+273 	1 	39 	106000
+383 	1 	49 	28000
+309 	0 	38 	50000
+
+300 rows × 3 columns
+
+y_train
+
+361    1
+253    1
+342    0
+14     0
+157    0
+      ..
+112    0
+293    0
+273    1
+383    1
+309    0
+Name: Purchased, Length: 300, dtype: int64
+
+X_test
+
+	Gender 	Age 	EstimatedSalary
+78 	0 	28 	87000
+188 	1 	35 	72000
+19 	0 	48 	29000
+231 	1 	39 	42000
+218 	0 	46 	96000
+... 	... 	... 	...
+173 	0 	34 	43000
+104 	0 	19 	21000
+47 	0 	27 	54000
+350 	0 	38 	113000
+248 	1 	41 	52000
+
+100 rows × 3 columns
+
+y_test
+
+78     0
+188    0
+19     1
+231    0
+218    0
+      ..
+173    0
+104    0
+47     0
+350    1
+248    0
+Name: Purchased, Length: 100, dtype: int64
+
+logReg = LogisticRegression(C = 50, multi_class = 'multinomial',solver = 'saga', tol = 0.1)
+
+logReg.fit(X_train, y_train)
+
+LogisticRegression(C=50, multi_class='multinomial', solver='saga', tol=0.1)
+
+logReg.fit(X_train, y_train)
+
+LogisticRegression(C=50, multi_class='multinomial', solver='saga', tol=0.1)
+
+yp = logReg.predict(X_test)
+
+yp
+
+array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+from sklearn.metrics import confusion_matrix
+
+cm = confusion_matrix(y_test, yp)
+cm
+
+array([[51,  0],
+       [29,  0]])
+
+new_df.describe()
+
+	Gender 	Age 	EstimatedSalary 	Purchased
+count 	400.000000 	400.000000 	400.000000 	400.000000
+mean 	0.490000 	37.655000 	69742.500000 	0.357500
+std 	0.500526 	10.482877 	34096.960282 	0.479864
+min 	0.000000 	18.000000 	15000.000000 	0.000000
+25% 	0.000000 	29.750000 	43000.000000 	0.000000
+50% 	0.000000 	37.000000 	70000.000000 	0.000000
+75% 	1.000000 	46.000000 	88000.000000 	1.000000
+max 	1.000000 	60.000000 	150000.000000 	1.000000
+
+y_test
+
+256    0
+355    1
+261    1
+352    1
+383    1
+      ..
+47     0
+377    0
+137    1
+206    1
+85     1
+Name: Purchased, Length: 80, dtype: int64
+
+logReg.score(X_test, y_test)
+
+0.675
+
+new_df2 = new_df[['Age', 'EstimatedSalary', 'Purchased']]
+new_df2
+
+	Age 	EstimatedSalary 	Purchased
+0 	19 	19000 	0
+1 	35 	20000 	0
+2 	26 	43000 	0
+3 	27 	57000 	0
+4 	19 	76000 	0
+... 	... 	... 	...
+395 	46 	41000 	1
+396 	51 	23000 	1
+397 	50 	20000 	1
+398 	36 	33000 	0
+399 	49 	36000 	1
+
+400 rows × 3 columns
+
+x=new_df['Gender']
+x = x.reshape(-1, 1)
+y=new_df['Purchased']
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+Input In [59], in <cell line: 2>()
+      1 x=new_df['Gender']
+----> 2 x = x.reshape(-1, 1)
+      3 y=new_df['Purchased']
+      4 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
+
+File ~/.local/lib/python3.8/site-packages/pandas/core/generic.py:5583, in NDFrame.__getattr__(self, name)
+   5576 if (
+   5577     name not in self._internal_names_set
+   5578     and name not in self._metadata
+   5579     and name not in self._accessors
+   5580     and self._info_axis._can_hold_identifiers_and_holds_name(name)
+   5581 ):
+   5582     return self[name]
+-> 5583 return object.__getattribute__(self, name)
+
+AttributeError: 'Series' object has no attribute 'reshape'
+
+logReg = LogisticRegression()
+
+logReg.fit(X_train, y_train)
+
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Input In [58], in <cell line: 1>()
+----> 1 logReg.fit(X_train, y_train)
+
+File ~/.local/lib/python3.8/site-packages/sklearn/linear_model/_logistic.py:1508, in LogisticRegression.fit(self, X, y, sample_weight)
+   1505 else:
+   1506     _dtype = [np.float64, np.float32]
+-> 1508 X, y = self._validate_data(
+   1509     X,
+   1510     y,
+   1511     accept_sparse="csr",
+   1512     dtype=_dtype,
+   1513     order="C",
+   1514     accept_large_sparse=solver not in ["liblinear", "sag", "saga"],
+   1515 )
+   1516 check_classification_targets(y)
+   1517 self.classes_ = np.unique(y)
+
+File ~/.local/lib/python3.8/site-packages/sklearn/base.py:581, in BaseEstimator._validate_data(self, X, y, reset, validate_separately, **check_params)
+    579         y = check_array(y, **check_y_params)
+    580     else:
+--> 581         X, y = check_X_y(X, y, **check_params)
+    582     out = X, y
+    584 if not no_val_X and check_params.get("ensure_2d", True):
+
+File ~/.local/lib/python3.8/site-packages/sklearn/utils/validation.py:964, in check_X_y(X, y, accept_sparse, accept_large_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, multi_output, ensure_min_samples, ensure_min_features, y_numeric, estimator)
+    961 if y is None:
+    962     raise ValueError("y cannot be None")
+--> 964 X = check_array(
+    965     X,
+    966     accept_sparse=accept_sparse,
+    967     accept_large_sparse=accept_large_sparse,
+    968     dtype=dtype,
+    969     order=order,
+    970     copy=copy,
+    971     force_all_finite=force_all_finite,
+    972     ensure_2d=ensure_2d,
+    973     allow_nd=allow_nd,
+    974     ensure_min_samples=ensure_min_samples,
+    975     ensure_min_features=ensure_min_features,
+    976     estimator=estimator,
+    977 )
+    979 y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric)
+    981 check_consistent_length(X, y)
+
+File ~/.local/lib/python3.8/site-packages/sklearn/utils/validation.py:769, in check_array(array, accept_sparse, accept_large_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, ensure_min_samples, ensure_min_features, estimator)
+    767     # If input is 1D raise error
+    768     if array.ndim == 1:
+--> 769         raise ValueError(
+    770             "Expected 2D array, got 1D array instead:\narray={}.\n"
+    771             "Reshape your data either using array.reshape(-1, 1) if "
+    772             "your data has a single feature or array.reshape(1, -1) "
+    773             "if it contains a single sample.".format(array)
+    774         )
+    776 # make sure we actually converted to numeric:
+    777 if dtype_numeric and array.dtype.kind in "OUSV":
+
+ValueError: Expected 2D array, got 1D array instead:
+array=[1. 1. 0. 1. 1. 0. 1. 1. 1. 0. 0. 0. 0. 0. 1. 0. 1. 0. 0. 1. 0. 0. 1. 1.
+ 0. 0. 0. 0. 0. 0. 1. 0. 1. 1. 1. 0. 0. 0. 1. 1. 0. 0. 0. 1. 1. 0. 0. 1.
+ 1. 1. 1. 1. 0. 0. 1. 0. 0. 1. 1. 1. 1. 1. 0. 1. 0. 0. 1. 1. 0. 0. 1. 1.
+ 0. 1. 1. 0. 1. 1. 1. 1. 1. 1. 1. 1. 0. 0. 0. 0. 1. 1. 1. 1. 0. 1. 0. 0.
+ 1. 1. 1. 1. 0. 0. 1. 0. 0. 1. 0. 0. 1. 0. 1. 1. 0. 0. 1. 0. 0. 1. 1. 1.
+ 0. 1. 1. 1. 1. 1. 1. 1. 0. 0. 1. 1. 1. 0. 0. 1. 1. 0. 0. 1. 1. 1. 1. 1.
+ 1. 1. 1. 1. 0. 1. 1. 1. 0. 0. 0. 1. 1. 0. 1. 0. 1. 0. 1. 0. 1. 0. 0. 1.
+ 0. 0. 1. 1. 0. 0. 1. 0. 0. 1. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 1. 1. 1. 0.
+ 0. 1. 1. 0. 0. 1. 0. 0. 1. 0. 0. 0. 1. 0. 0. 1. 0. 1. 1. 0. 1. 1. 1. 0.
+ 0. 1. 0. 1. 0. 0. 0. 0. 0. 0. 0. 1. 0. 1. 1. 0. 1. 0. 0. 1. 1. 1. 1. 1.
+ 0. 1. 0. 1. 1. 1. 0. 1. 0. 0. 0. 0. 0. 1. 1. 0. 0. 1. 0. 1. 0. 0. 0. 0.
+ 0. 1. 1. 0. 1. 0. 0. 0. 1. 1. 1. 0. 0. 1. 0. 1. 0. 0. 1. 0. 1. 0. 1. 0.
+ 1. 1. 0. 1. 1. 1. 1. 1. 1. 0. 1. 0. 1. 0. 0. 1. 1. 0. 1. 1. 1. 1. 0. 0.
+ 1. 1. 1. 0. 1. 0. 1. 0.].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
+
+logReg.fit(X_train, y_train)
+
+LogisticRegression(C=50, multi_class='multinomial', solver='saga', tol=0.1)
+
+yp = logReg.predict(X_test)
+
+yp
+
+array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+print(scaler.fit(new_df))
+
+MinMaxScaler()
+
+print(scaler.data_max_)
+
+[1.0e+00 6.0e+01 1.5e+05 1.0e+00]
+
+print(scaler.transform(new_df))
+
+[[1.         0.02380952 0.02962963 0.        ]
+ [1.         0.4047619  0.03703704 0.        ]
+ [0.         0.19047619 0.20740741 0.        ]
+ ...
+ [0.         0.76190476 0.03703704 1.        ]
+ [1.         0.42857143 0.13333333 0.        ]
+ [0.         0.73809524 0.15555556 1.        ]]
+
+new_df
+
+	Gender 	Age 	EstimatedSalary 	Purchased
+0 	1 	19 	19000 	0
+1 	1 	35 	20000 	0
+2 	0 	26 	43000 	0
+3 	0 	27 	57000 	0
+4 	1 	19 	76000 	0
+... 	... 	... 	... 	...
+395 	0 	46 	41000 	1
+396 	1 	51 	23000 	1
+397 	0 	50 	20000 	1
+398 	1 	36 	33000 	0
+399 	0 	49 	36000 	1
+
+400 rows × 4 columns
+
+ 
+
